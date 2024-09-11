@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Time vs Local Time Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/scale.css" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .explanation {
+            @apply bg-gray-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg;
+        }
+        .chart-container {
+            @apply bg-white p-4 rounded-lg shadow-md mb-6;
+        }
+        .svg-container {
+            @apply flex justify-center mb-6;
+        }
+        .svg-explanation {
+            @apply text-center mb-6 italic text-gray-600;
+        }
+        #map {
+            height: 500px;
+            @apply rounded-lg shadow-md mb-6;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold mb-8 text-gray-800">Solar Time vs Local Time Report</h1>
+        
+        <div class="explanation">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">Understanding Solar Time</h2>
+            <p class="mb-4">Solar time is based on the apparent motion of the Sun across the sky. It directly relates to the Sun's position as observed from a specific location on Earth. There are two types of solar time:</p>
+            <ul class="list-disc pl-6 mb-4">
+                <li><strong>Apparent Solar Time:</strong> Based on the actual, observable position of the Sun.</li>
+                <li><strong>Mean Solar Time:</strong> A more uniform measure that accounts for variations in the Earth's orbital speed.</li>
+            </ul>
+            <p>The difference between apparent and mean solar time is described by the "equation of time," which varies throughout the year due to the Earth's elliptical orbit and axial tilt.</p>
+        </div>
+
+        <div class="svg-container">
+            <svg width="600" height="300" viewBox="0 0 600 300" class="max-w-full h-auto">
+                <defs>
+                    <linearGradient id="sunGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+                    </linearGradient>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                        <feMerge>
+                            <feMergeNode in="coloredBlur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+                <ellipse cx="300" cy="150" rx="250" ry="100" fill="none" stroke="#6B7280" stroke-width="2" stroke-dasharray="5,5"/>
+                <circle cx="300" cy="150" r="30" fill="url(#sunGradient)" filter="url(#glow)"/>
+                <circle cx="50" cy="150" r="15" fill="#60A5FA"/>
+                <circle cx="550" cy="150" r="15" fill="#60A5FA"/>
+                <path d="M 300 150 Q 425 50 550 150" fill="none" stroke="#6B7280" stroke-width="2" stroke-dasharray="3,3"/>
+                <path d="M 300 150 Q 175 250 50 150" fill="none" stroke="#6B7280" stroke-width="2" stroke-dasharray="3,3"/>
+                <text x="570" y="155" font-size="14" fill="#4B5563">Aphelion</text>
+                <text x="10" y="155" font-size="14" fill="#4B5563">Perihelion</text>
+                <text x="260" y="30" font-size="16" fill="#4B5563" font-weight="bold">Earth's Elliptical Orbit</text>
+                <text x="285" y="140" font-size="14" fill="#4B5563">Sun</text>
+            </svg>
+        </div>
+        <div class="svg-explanation">
+            Figure 1: Earth's elliptical orbit around the Sun, showing perihelion (closest approach) and aphelion (farthest point).
+        </div>
+
+        <div class="explanation">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">The Difference Between Solar Time and Local Time</h2>
+            <p class="mb-4">Local time, which we use in our daily lives, is a standardized time for a specific time zone. It's based on the mean solar time of a reference meridian within that zone. The primary differences between solar time and local time are:</p>
+            <ul class="list-disc pl-6">
+                <li><strong>Time Zone Effects:</strong> Local time is uniform across a time zone, while solar time varies continuously with longitude.</li>
+                <li><strong>Daylight Saving Time:</strong> Many regions adjust their clocks seasonally, further deviating from solar time.</li>
+                <li><strong>Political Boundaries:</strong> Time zones often follow political rather than strictly longitudinal boundaries.</li>
+                <li><strong>Equation of Time:</strong> The natural variation between apparent solar time and mean solar time throughout the year.</li>
+            </ul>
+        </div>
+
+        <div class="svg-container">
+            <svg width="600" height="300" viewBox="0 0 600 300" class="max-w-full h-auto">
+                <defs>
+                    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#87CEEB;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#E6F3FF;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <rect x="50" y="50" width="500" height="200" fill="url(#skyGradient)" stroke="#6B7280" stroke-width="2" rx="10"/>
+                <line x1="50" y1="150" x2="550" y2="150" stroke="#6B7280" stroke-width="2" stroke-dasharray="5,5"/>
+                <text x="560" y="155" font-size="14" fill="#4B5563">Longitude</text>
+                <line x1="300" y1="50" x2="300" y2="250" stroke="#6B7280" stroke-width="2" stroke-dasharray="5,5"/>
+                <text x="290" y="270" font-size="14" fill="#4B5563">Time Zone Meridian</text>
+                <path d="M 50 230 Q 300 70 550 230" fill="none" stroke="#EF4444" stroke-width="3"/>
+                <text x="250" y="40" font-size="14" fill="#EF4444" font-weight="bold">Solar Noon Curve</text>
+                <line x1="50" y1="200" x2="550" y2="200" stroke="#10B981" stroke-width="3"/>
+                <text x="240" y="195" font-size="14" fill="#10B981" font-weight="bold">Local Noon (12:00)</text>
+            </svg>
+        </div>
+        <div class="svg-explanation">
+            Figure 2: Comparison of solar noon (curved red line) vs local noon (straight green line) across a time zone.
+        </div>
+
+        <div class="explanation">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">Why Solar Time Matters</h2>
+            <p class="mb-4">Understanding solar time is crucial for several reasons:</p>
+            <ul class="list-disc pl-6">
+                <li><strong>Natural Rhythms:</strong> Solar time aligns with natural daylight patterns, affecting biological processes in plants, animals, and humans.</li>
+                <li><strong>Energy Optimization:</strong> Solar energy systems rely on accurate predictions of solar position and intensity.</li>
+                <li><strong>Navigation:</strong> Traditional celestial navigation techniques are based on solar time.</li>
+                <li><strong>Cultural and Religious Practices:</strong> Many traditions, including prayer times in some religions, are based on solar positions.</li>
+                <li><strong>Astrological Calculations:</strong> Particularly in Vedic astrology, precise solar time is crucial for accurate chart casting and predictions.</li>
+            </ul>
+        </div>
+
+        <h2 class="text-3xl font-semibold mb-6 text-gray-800">Data Analysis: Solar Time vs Local Time Across the World</h2>
+
+        <div class="overflow-x-auto mb-6">
+            <table class="min-w-full bg-white rounded-lg overflow-hidden shadow-md">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-3 px-4 text-left">Country/City</th>
+                        <th class="py-3 px-4 text-left">Local Time (LST)</th>
+                        <th class="py-3 px-4 text-left">Solar Time (SST)</th>
+                        <th class="py-3 px-4 text-left">Difference (SST - LST)</th>
+                        <th class="py-3 px-4 text-left">Timezone</th>
+                    </tr>
+                </thead>
+                <tbody id="data-table">
+                    <!-- Table data will be inserted here by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="explanation">
+            <h3 class="text-xl font-semibold mb-4 text-gray-800">Key Observations</h3>
+            <ul class="list-disc pl-6">
+                <li>The differences between solar time and local time range from -1.22 hours (Beijing) to +1.42 hours (Cape Verde).</li>
+                <li>Cities close to their time zone's central meridian, like London and Anchorage, show very small differences.</li>
+                <li>Countries that span large longitudinal distances but use a single time zone, like China and India, show significant variations across their cities.</li>
+                <li>The results account for Daylight Saving Time where applicable.</li>
+            </ul>
+        </div>
+
+        <h3 class="text-2xl font-semibold mb-4 text-gray-800">Geographical Distribution</h3>
+        <div id="map"></div>
+
+        <div class="explanation">
+            <h3 class="text-xl font-semibold mb-4 text-gray-800">Geographical Patterns</h3>
+            <p>The map above shows the geographical distribution of the time differences. Redder points indicate locations where solar time is ahead of local time, while greener points show where solar time lags behind local time. This visualization helps to understand how longitude and time zone boundaries affect the relationship between solar and local time.</p>
+        </div>
+
+        <h3 class="text-2xl font-semibold mb-4 text-gray-800">Data Visualizations</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="chart-container">
+                <canvas id="difference-chart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="timezone-chart"></canvas>
+            </div>
+        </div>
+
+        <div class="explanation">
+            <h3 class="text-xl font-semibold mb-4 text-gray-800">Analysis of Charts</h3>
+            <p class="mb-4">The bar chart shows the time differences for each location, sorted from the most negative to the most positive. This helps to quickly identify which locations have the largest discrepancies between solar and local time.</p>
+            <p>The scatter plot compares the time difference to the timezone offset. This can reveal patterns in how time zones are defined and used across different regions.</p>
+        </div>
+
+        <div class="explanation">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">Implications for Vedic Astrology</h2>
+            <p class="mb-4">The data presented here has significant implications for Vedic astrological practices:</p>
+            <ul class="list-disc pl-6">
+                <li><strong>Birth Time Rectification:</strong> In locations with large differences between solar and local time, birth time rectification becomes crucial.</li>
+                <li><strong>Varying Impact Across India:</strong> Despite using a single time zone, different parts of India show varying solar time differences.</li>
+                <li><strong>International Chart Comparisons:</strong> When comparing charts of individuals born in different countries, astrologers need to be aware of these solar time discrepancies.</li>
+                <li><strong>Muhurta Calculations:</strong> For determining auspicious times, especially for events that span multiple locations, these time differences need to be taken into account.</li>
+                <li><strong>Dashas and Transits:</strong> The calculation of dasha periods and the timing of transits may need to be adjusted based on the true solar time rather than the local clock time.</li>
+            </ul>
+        </div>
+
+        <div class="svg-container">
+            <svg width="600" height="400" viewBox="0 0 600 400" class="max-w-full h-auto">
+                <defs>
+                    <linearGradient id="chartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#F3E8FF;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#E0F2FE;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <circle cx="300" cy="200" r="180" fill="url(#chartGradient)" stroke="#6B7280" stroke-width="2"/>
+                <line x1="300" y1="20" x2="300" y2="380" stroke="#6B7280" stroke-width="2" stroke-dasharray="5,5"/>
+                <line x1="120" y1="200" x2="480" y2="200" stroke="#6B7280" stroke-width="2" stroke-dasharray="5,5"/>
+                <circle cx="300" cy="200" r="3" fill="#6B7280"/>
+                <path d="M 300 200 L 450 90" stroke="#EF4444" stroke-width="3"/>
+                <path d="M 300 200 L 400 350" stroke="#10B981" stroke-width="3"/>
+                <text x="460" y="85" font-size="14" fill="#EF4444" font-weight="bold">Planet Position (Local Time)</text>
+                <text x="410" y="365" font-size="14" fill="#10B981" font-weight="bold">Planet Position (Solar Time)</text>
+                <text x="250" y="30" font-size="16" fill="#4B5563" font-weight="bold">Vedic Astrological Chart</text>
+                <text x="270" y="190" font-size="14" fill="#4B5563">Earth</text>
+                <!-- Add zodiac signs -->
+                <text x="485" y="205" font-size="12" fill="#6B7280" transform="rotate(15 485 205)">Aries</text>
+                <text x="440" y="100" font-size="12" fill="#6B7280" transform="rotate(45 440 100)">Taurus</text>
+                <text x="340" y="35" font-size="12" fill="#6B7280" transform="rotate(75 340 35)">Gemini</text>
+                <text x="220" y="35" font-size="12" fill="#6B7280" transform="rotate(105 220 35)">Cancer</text>
+                <text x="120" y="100" font-size="12" fill="#6B7280" transform="rotate(135 120 100)">Leo</text>
+                <text x="75" y="205" font-size="12" fill="#6B7280" transform="rotate(165 75 205)">Virgo</text>
+                <text x="95" y="315" font-size="12" fill="#6B7280" transform="rotate(195 95 315)">Libra</text>
+                <text x="185" y="385" font-size="12" fill="#6B7280" transform="rotate(225 185 385)">Scorpio</text>
+                <text x="305" y="395" font-size="12" fill="#6B7280" transform="rotate(255 305 395)">Sagittarius</text>
+                <text x="415" y="340" font-size="12" fill="#6B7280" transform="rotate(285 415 340)">Capricorn</text>
+                <text x="480" y="240" font-size="12" fill="#6B7280" transform="rotate(315 480 240)">Aquarius</text>
+                <text x="470" y="135" font-size="12" fill="#6B7280" transform="rotate(345 470 135)">Pisces</text>
+            </svg>
+        </div>
+        <div class="svg-explanation">
+            Figure 3: Illustration of how the difference between local time and solar time can affect planetary positions in a Vedic astrological chart.
+        </div>
+
+        <div class="explanation">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">Conclusion</h2>
+            <p class="mb-4">This analysis demonstrates the complex relationship between solar time and standardized local time. The variations we observe are influenced by factors such as:</p>
+            <ul class="list-disc pl-6 mb-4">
+                <li>Geographical location within a time zone</li>
+                <li>Political decisions on time zone boundaries</li>
+                <li>The use of daylight saving time</li>
+                <li>The equation of time, which accounts for the Earth's elliptical orbit and axial tilt</li>
+            </ul>
+            <p class="mb-4">For Vedic astrology, these findings underscore the importance of using accurate solar time in calculations. The practice of simply using the local clock time for astrological calculations can lead to significant inaccuracies, especially in locations far from their time zone's central meridian.</p>
+            <p>Astrologers and astrology enthusiasts should consider:</p>
+            <ol class="list-decimal pl-6">
+                <li>Using software that can convert local time to accurate solar time based on precise geographical coordinates.</li>
+                <li>Being especially cautious when working with birth times from large countries with a single time zone, like India or China.</li>
+                <li>Educating clients about the importance of solar time in astrological calculations.</li>
+                <li>Potentially re-evaluating past readings or predictions that may have been based solely on local clock time.</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const data = [
+                ["Calicut, India", "12:01:08", "12:05:38", 0.08, 5.0, 11.2588, 75.7804],
+                ["Delhi, India", "12:06:51", "12:17:04", 0.17, 5.0, 28.6139, 77.2090],
+                ["Mumbai, India", "11:49:31", "11:42:25", -0.12, 5.0, 19.0760, 72.8777],
+                ["Chennai, India", "12:19:05", "12:41:33", 0.37, 5.0, 13.0827, 80.2707],
+                ["Kolkata, India", "11:47:27", "11:38:17", -0.15, 6.0, 22.5051, 87.3619],
+                ["Bangalore, India", "12:08:23", "12:20:09", 0.20, 5.0, 12.9716, 77.5946],
+                ["Hyderabad, India", "12:11:57", "12:27:17", 0.26, 5.0, 17.3850, 78.4867],
+                ["Ahmedabad, India", "11:48:18", "11:39:58", -0.14, 5.0, 23.0225, 72.5714],
+                ["Assam, India", "12:09:45", "12:22:53", 0.22, 6.0, 26.2006, 92.9376],
+                ["New York, USA", "11:01:59", "10:07:21", -0.91, -4.0, 40.7128, -74.0060],
+                ["London, UK", "11:57:30", "11:58:22", 0.01, 0.0, 51.5074, -0.1278],
+                ["Sydney, Australia", "12:02:52", "12:09:07", 0.10, 10.0, -33.8688, 151.2153],
+                ["Tokyo, Japan", "12:16:46", "12:36:55", 0.34, 9.0, 35.6895, 139.6917],
+                ["Rio de Janeiro, Brazil", "12:35:19", "13:14:00", 0.64, -3.0, -22.9068, -43.1729],
+                ["Cape Town, South Africa", "11:11:42", "10:26:47", -0.75, 2.0, -33.9249, 18.4241],
+                ["Moscow, Russia", "11:28:29", "11:00:20", -0.47, 3.0, 55.7558, 37.6173],
+                ["Dubai, UAE", "11:39:05", "11:21:33", -0.29, 4.0, 25.2048, 55.2708],
+                ["Anchorage, USA", "11:58:24", "12:00:11", 0.03, -9.0, 61.2181, -149.9003],
+                ["Paris, France", "12:07:25", "12:18:12", 0.18, 2.0, 48.8566, 2.3522],
+                ["Cairo, Egypt", "11:02:57", "10:09:17", -0.89, 2.0, 30.0444, 31.2357],
+                ["Beijing, China", "10:43:38", "09:30:39", -1.22, 8.0, 39.9042, 116.4074],
+                ["Mexico City, Mexico", "11:21:28", "10:46:19", -0.59, -5.0, 19.4326, -99.1332],
+                ["Buenos Aires, Argentina", "12:04:29", "12:12:20", 0.13, -3.0, -34.6037, -58.3816],
+                ["Cape Verde", "13:21:57", "14:47:17", 1.42, -1.0, 16.0021, -24.0132],
+                ["Reykjavik, Iceland", "11:30:11", "11:03:44", -0.44, 0.0, 64.1281, -21.9562],
+                ["Nairobi, Kenya", "11:25:17", "10:53:56", -0.52, 3.0, -1.2864, 36.8172],
+                ["Washington D.C., USA", "10:49:52", "09:43:06", -1.11, -4.0, 38.9072, -77.0369],
+                ["Addis Ababa, Ethiopia", "11:33:00", "11:09:22", -0.39, 3.0, 9.0240, 38.7469]
+            ];
+
+            // Populate table
+            const tableBody = document.querySelector('#data-table');
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                row.slice(0, 5).forEach((cell, index) => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    td.className = 'py-2 px-4 border-b border-gray-200' + (index === 3 ? ' font-semibold' : '');
+                    tr.appendChild(td);
+                });
+                tableBody.appendChild(tr);
+            });
+
+            // Create map
+            const map = L.map('map').setView([20, 0], 2);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            data.forEach(([name, , , diff, , lat, lon]) => {
+                const color = diff > 0 ? `rgb(239, 68, 68, ${Math.min(Math.abs(diff), 1)})` : `rgb(16, 185, 129, ${Math.min(Math.abs(diff), 1)})`;
+                L.circleMarker([lat, lon], {
+                    radius: 5 + Math.abs(diff) * 3,
+                    fillColor: color,
+                    color: '#000',
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map).bindPopup(`<strong>${name}</strong><br>Difference: ${diff.toFixed(2)} hours`);
+            });
+
+            // Create charts
+            const sortedData = data.sort((a, b) => a[3] - b[3]);
+            
+            new Chart(document.getElementById('difference-chart'), {
+                type: 'bar',
+                data: {
+                    labels: sortedData.map(row => row[0]),
+                    datasets: [{
+                        label: 'Time Difference (hours)',
+                        data: sortedData.map(row => row[3]),
+                        backgroundColor: sortedData.map(row => row[3] > 0 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.7)'),
+                        borderColor: sortedData.map(row => row[3] > 0 ? 'rgb(239, 68, 68)' : 'rgb(16, 185, 129)'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Time Difference Between Solar Time and Local Time',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.parsed.y.toFixed(2)} hours`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Time Difference (hours)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 90,
+                                minRotation: 90
+                            }
+                        }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('timezone-chart'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Time Difference vs Timezone',
+                        data: data.map(row => ({x: row[4], y: row[3]})),
+                        backgroundColor: data.map(row => row[3] > 0 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.7)'),
+                        borderColor: data.map(row => row[3] > 0 ? 'rgb(239, 68, 68)' : 'rgb(16, 185, 129)'),
+                        borderWidth: 1,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Time Difference vs Timezone Offset',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const index = context.dataIndex;
+                                    return `${data[index][0]}: ${context.parsed.y.toFixed(2)} hours`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Timezone Offset'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Time Difference (hours)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Initialize tooltips
+            tippy('[data-tippy-content]');
+        });
+    </script>
+</body>
+</html>

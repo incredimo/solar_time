@@ -72,14 +72,14 @@ Write-Output "🎉 Pushing changes and tags to the repository..."
 git push && git push --tags
 
 # Publish the package to crates.io
-# Write-Output "📦 Publishing package to crates.io..."
-# cargo publish --allow-dirty
+Write-Output "📦 Publishing package to crates.io..."
+cargo publish --allow-dirty
 
-# if ($LASTEXITCODE -eq 0) {
-#     Write-Output "✨ Package successfully published to crates.io!"
-# } else {
-#     Write-Output "❌ Failed to publish package to crates.io."
-#     Write-Output "Please check the output above for more details."
-# }
+if ($LASTEXITCODE -eq 0) {
+    Write-Output "✨ Package successfully published to crates.io!"
+} else {
+    Write-Output "❌ Failed to publish package to crates.io."
+    Write-Output "Please check the output above for more details."
+}
 
 Write-Output "🎉 Release v$newVersion completed!"

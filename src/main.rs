@@ -3,15 +3,7 @@ use solar_time::{Date, Time, Timestamp};
 
 
 fn main() {
-    // Test the difference between solar time and local time at various places of the world
-    // Print the results in a table format with colors showing the most variance in red and least in green (gradient)
-    // The table should contain the following columns:
-    // - Country/City
-    // - Local Time (LST)
-    // - Solar Time (SST)
-    // - Difference (SST - LST)
-    // - Timezone
-    
+ 
     let locations = vec![
         ("Calicut, India", 11.2588, 75.7804),
         ("Delhi, India", 28.6139, 77.2090),
@@ -41,6 +33,26 @@ fn main() {
         ("Nairobi, Kenya", -1.2864, 36.8172),
         ("Washington D.C., USA", 38.9072, -77.0369),
         ("Addis Ababa, Ethiopia", 9.0240, 38.7469),
+        ("Auckland, New Zealand", -36.8485, 174.7633),
+        ("Vancouver, Canada", 49.2827, -123.1207),
+        ("Stockholm, Sweden", 59.3293, 18.0686),
+        ("Singapore", 1.3521, 103.8198),
+        ("Istanbul, Turkey", 41.0082, 28.9784),
+        ("Bangkok, Thailand", 13.7563, 100.5018),
+        ("Lima, Peru", -12.0464, -77.0428),
+        ("Helsinki, Finland", 60.1699, 24.9384),
+        ("Seoul, South Korea", 37.5665, 126.9780),
+        ("Lisbon, Portugal", 38.7223, -9.1393),
+        ("Honolulu, USA", 21.3069, -157.8583),
+        ("Kathmandu, Nepal", 27.7172, 85.3240),
+        ("Quito, Ecuador", -0.1807, -78.4678),
+        ("Oslo, Norway", 59.9139, 10.7522),
+        ("Manila, Philippines", 14.5995, 120.9842),
+        ("Casablanca, Morocco", 33.5731, -7.5898),
+        ("Havana, Cuba", 23.1136, -82.3666),
+        ("Reykjavik, Iceland", 64.1265, -21.8174),
+        ("Ulaanbaatar, Mongolia", 47.8864, 106.9057),
+
     ];
 
     let mut differences = Vec::new();
@@ -60,7 +72,7 @@ fn main() {
     let max_difference = differences.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
     let min_difference = differences.iter().cloned().fold(f64::INFINITY, f64::min);
 
-    println!("| {:<25} | {:<12} | {:<12} | {:<12} | {:<8} |", "Country/City", "Local Time", "Solar Time", "Difference", "Timezone");
+    println!("| {:<25} | {:<8} | {:<8} | {:<8} | {:<8} |", "Country/City", "LOCAL", "SOLAR", "DIFF", "TZ");
     println!("{:-<78}", "");
 
     for (idx, (location, local_time, solar_time, difference, timezone)) in results.iter().enumerate() {
@@ -69,7 +81,7 @@ fn main() {
         let green = (255.0 * (1.0 - gradient)) as u8;
         let color = format!("\x1b[38;2;{};{};0m", red, green);
         
-        println!("{}| {:<25} | {:02}:{:02}:{:02} | {:02}:{:02}:{:02} | {:+6.2} hours | {:+5.1}    |\x1b[0m", 
+        println!("{}| {:<25} | {:02}:{:02}:{:02} | {:02}:{:02}:{:02} | {:>+8.2} | {:>8.1} |\x1b[0m",
             color,
             location,
             (local_time / 3600000) % 24,
